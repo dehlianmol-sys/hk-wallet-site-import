@@ -1,18 +1,16 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { createClient, Session, User, AuthChangeEvent, PostgrestError } from '@supabase/supabase-js';
+import { Session, User, AuthChangeEvent, PostgrestError } from '@supabase/supabase-js';
+import { supabase, logoUrl, APK_DOWNLOAD_URL } from './integrations/supabase/client';
 
-const supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] || 'https://dmqiauxksjspxwtvdcdx.supabase.co';
-const supabaseAnonKey = import.meta.env['VITE_SUPABASE_ANON_KEY'] || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcWlhdXhrc2pzcHh3dHZkY2R4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzMDc5OTAsImV4cCI6MjEwMzg4Mzk5MH0.NEhF7zRlaUMgGbhDY08y2WyMDSttd0G6xcytBA-SG6A';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-const downloadUrl = 'https://gofile.io/d/FlX3pVC7';
+const downloadUrl = APK_DOWNLOAD_URL;
 const rewards = [{ label: 'Tier 1', rate: '5%', detail: 'Direct referrals' }, { label: 'Tier 2', rate: '0.3%', detail: 'Second level' }, { label: 'Tier 3', rate: '0.1%', detail: 'Third level' }];
 
-type Deposit = { id: string; amount: number; status: 'pending' | 'success' | 'cancelled' | 'expired'; expires_at: string };
-type Profile = { uid: string; affiliate_id: string | null; referred_by_uid: string | null; static_avatar: string | null };
+type Deposit = { id: string; amount: number; status: 'pending' | 'success' | 'cancelled' | 'expired'; expires_at: string; created_at: string };
+type Profile = { uid: string; affiliate_id: string | null; referred_by_uid: string | null; static_avatar: string | null; balance: number; is_agent: boolean };
+type Affiliate = { affiliate_id: string; name: string | null; total_deposits: number; total_pending_deposits: number; referral_count: number };
 
 function Logo({ compact = false }: { compact?: boolean }) {
-  const { data } = supabase.storage.from('logos').getPublicUrl('virapay_logo.png');
-  return <div className="brand"><img src={data.publicUrl} alt="HK Wallet" onError={(event) => { event.currentTarget.style.display = 'none'; }} /><span><strong>HK Wallet</strong>{!compact && <small>Earn Money Online</small>}</span></div>;
+  return <div className="brand"><img src={logoUrl} alt="HK Wallet" onError={(event) => { event.currentTarget.style.display = 'none'; }} /><span><strong>HK Wallet</strong>{!compact && <small>Earn Money Online</small>}</span></div>;
 }
 
 function Landing() {
